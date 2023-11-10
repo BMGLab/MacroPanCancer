@@ -1,0 +1,70 @@
+---
+title: "Visualization Code"
+author: "melisaekici"
+date: "2023-11-02"
+output: html_document
+---
+
+```{r}
+library(Seurat)
+library(dplyr)
+library(DoMultiBarHeatmap)
+```
+
+
+```{r}
+# Pancreatic
+# adding TFs to metadata
+denemegenes <- P1regulons_asGeneSet$`CEBPB`
+denemegenes <- as.factor(denemegenes)
+denemegenes <- as.data.frame(denemegenes)
+P1_seurat_M <- AddMetaData(object = P1_seurat_M, metadata= denemegenes, col.name = 'gene.idents')
+
+# doheatmap
+deneme.genes <- P1regulons_asGeneSet$`CEBPB`
+P1_seurat_M <- ScaleData(P1_seurat_M, features = deneme.genes)
+P1heatmap <- DoHeatmap(object = P1_seurat_M,  features = deneme.genes)
+
+```
+
+```{r}
+# Colorectal
+denemegenes2 <- K4regulons_asGeneSet$CEBPB
+denemegenes2 <- as.factor(denemegenes2)
+denemegenes2 <- as.data.frame(denemegenes2)
+K4_seurat_M <- AddMetaData(object = K4_seurat_M, metadata= denemegenes2, col.name = 'gene.idents')
+
+deneme.genes2 <- K4regulons_asGeneSet$CEBPB
+K4_seurat_M <- ScaleData(K4_seurat_M, features = deneme.genes2)
+K4heatmap <- DoHeatmap(K4_seurat_M, features = deneme.genes2)
+
+
+P1heatmap + K4heatmap
+
+```
+
+
+```{r}
+#Pancreatic and Colorectal
+
+mergedgenes <- union(deneme.genes, deneme.genes2)
+mergedgenes <- unique(mergedgenes)
+
+mergedgenes <- as.factor(mergedgenes)
+mergedgenes <- as.data.frame(mergedgenes)
+
+seurat_obj_merged <- AddMetaData(object = seurat_obj_merged, metadata= mergedgenes, col.name = 'gene.idents')
+
+
+```
+
+
+```{r}
+#Multi Bar Heatmap
+seurat_obj_merged <- ScaleData(seurat_obj_merged,features = rownames(seurat_obj_merged))
+DoMultiBarHeatmap(seurat_obj_merged, features = c(mergedgenes$mergedgenes), additional.group.by = c('orig.ident'), slot = 'data')
+DoHeatmap(seurat_obj_merged, features = c(mergedgenes$mergedgenes), group.by = c('orig.ident'), slot = 'data')
+```
+
+
+#pheatmap
